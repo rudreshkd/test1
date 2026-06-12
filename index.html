@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Maia's Birthday Cake 🎂</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Pacifico&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; overflow:hidden; }
+  body {
+    font-family:'Baloo 2', 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(180deg, #ffe9f2 0%, #ffd6e7 45%, #ffc4dc 100%);
+    color:#7a2f4e;
+    position:relative;
+  }
+  /* soft floating dots in the background */
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none;
+    background-image:
+      radial-gradient(circle 6px at 12% 20%, #ffffff88 0 6px, transparent 7px),
+      radial-gradient(circle 4px at 80% 15%, #ffffff77 0 4px, transparent 5px),
+      radial-gradient(circle 8px at 90% 70%, #ffffff66 0 8px, transparent 9px),
+      radial-gradient(circle 5px at 8% 75%, #ffffff77 0 5px, transparent 6px),
+      radial-gradient(circle 4px at 50% 8%, #ffffff66 0 4px, transparent 5px),
+      radial-gradient(circle 7px at 30% 90%, #ffffff55 0 7px, transparent 8px);
+  }
+
+  .scene {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; padding:16px;
+    transition: opacity .8s ease, transform .8s ease;
+  }
+  .scene.gone { opacity:0; transform:scale(1.12); pointer-events:none; }
+  .scene.pre  { opacity:0; transform:scale(.92); pointer-events:none; }
+  .hidden { display:none !important; }
+
+  .sceneTitle {
+    font-family:'Pacifico', cursive; font-weight:400;
+    font-size:clamp(1.6rem, 5vw, 2.6rem);
+    color:#d6336c; text-shadow:0 2px 0 #ffffffaa;
+  }
+  .instructions {
+    background:#ffffffcc; border:2px dashed #f783ac; border-radius:18px;
+    padding:10px 22px; font-size:clamp(1rem, 3vw, 1.25rem); font-weight:600;
+    color:#a61e4d; text-align:center; max-width:560px;
+    box-shadow:0 4px 14px #d6336c22;
+  }
+
+  .cakeSvg { width:min(92vw, 560px); height:auto; display:block; }
+
+  /* ---------- candles & flames (scene 1) ---------- */
+  .flameWrap { transform-box:fill-box; transform-origin:50% 100%; opacity:0; transform:scale(.2); }
+  .candle.lit .flameWrap { opacity:1; transform:scale(1); transition: opacity .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1); }
+  .flameLean { transform-box:fill-box; transform-origin:50% 100%; }
+  .flame { transform-box:fill-box; transform-origin:50% 100%; animation:flick .18s infinite alternate ease-in-out; }
+  @keyframes flick {
+    from { transform:scale(1,1) rotate(-2.5deg); }
+    to   { transform:scale(.9,1.1) rotate(3deg); }
+  }
+  .candle.out .flame { animation:none; opacity:0; transform:scale(.1); transition:all .22s ease-out; }
+  .smoke { transform-box:fill-box; transform-origin:50% 100%; opacity:0; }
+  .candle.out .smoke { animation:smokeUp 1.8s ease-out forwards; }
+  @keyframes smokeUp {
+    0%   { opacity:0; transform:translateY(0) scale(.7); }
+    18%  { opacity:.75; }
+    100% { opacity:0; transform:translateY(-52px) scale(1.7); }
+  }
+  .flameHit { cursor:pointer; }
+
+  /* blow meter */
+  #meter {
+    width:min(70vw, 320px); height:22px; border-radius:99px;
+    background:#ffffffbb; border:2px solid #f783ac; overflow:hidden;
+    position:relative; box-shadow:inset 0 2px 4px #d6336c22;
+  }
+  #meterFill {
+    height:100%; width:0%; border-radius:99px;
+    background:linear-gradient(90deg, #74c0fc, #4dabf7, #d6336c);
+    transition:width .08s linear;
+  }
+  #meterLabel { font-size:.85rem; font-weight:600; color:#a61e4d; opacity:.8; }
+
+  /* ---------- start overlay ---------- */
+  #startOverlay {
+    position:absolute; inset:0; z-index:30;
+    display:flex; align-items:center; justify-content:center;
+    background:#ffd6e7d9; backdrop-filter:blur(4px);
+    transition:opacity .6s ease;
+  }
+  #startOverlay.gone { opacity:0; pointer-events:none; }
+  .startCard {
+    background:#fff; border-radius:28px; padding:36px 44px; text-align:center;
+    box-shadow:0 18px 50px #d6336c33; max-width:90vw;
+    animation:cardIn .7s cubic-bezier(.34,1.4,.64,1) backwards;
+  }
+  @keyframes cardIn { from { opacity:0; transform:translateY(40px) scale(.9);} }
+  .startCard h1 { font-family:'Pacifico', cursive; font-weight:400; font-size:clamp(2rem,7vw,3.2rem); color:#d6336c; margin-bottom:8px; }
+  .startCard p { font-size:1.1rem; color:#a61e4d; margin-bottom:22px; }
+  .bigBtn {
+    font-family:inherit; font-weight:800; font-size:1.25rem;
+    padding:14px 34px; border:none; border-radius:99px; cursor:pointer;
+    color:#fff; background:linear-gradient(135deg, #ff6b9d, #d6336c);
+    box-shadow:0 8px 20px #d6336c55, inset 0 -3px 0 #00000022;
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .bigBtn:hover { transform:translateY(-2px) scale(1.04); box-shadow:0 12px 26px #d6336c66, inset 0 -3px 0 #00000022; }
+  .bigBtn:active { transform:translateY(1px) scale(.98); }
+
+  /* ---------- scene 2 : cutting ---------- */
+  #stage2 { position:relative; width:min(92vw, 560px); }
+  .candleTop { transition: transform .7s cubic-bezier(.5,-0.3,.7,1), opacity .7s ease; }
+  .candleTop.removed { transform:translate(160px,-260px) rotate(40deg); opacity:0; }
+
+  #sliceG { transform-box:fill-box; transform-origin:50% 50%; transition:transform 1.15s cubic-bezier(.3,1.25,.45,1); }
+  #sliceG.cut { transform:translate(74px,60px) rotate(7deg); filter:drop-shadow(0 10px 10px #00000033); }
+  #gapW { opacity:0; transition:opacity .5s ease .25s; }
+  #gapW.show { opacity:1; }
+
+  .guide { stroke:#d6336c; stroke-width:4; stroke-dasharray:9 9; stroke-linecap:round; fill:none; opacity:0; animation:march 1s linear infinite; }
+  .guide.on { opacity:.95; }
+  @keyframes march { to { stroke-dashoffset:-18; } }
+  .prog { stroke:#fff; stroke-width:6; stroke-linecap:round; fill:none; }
+
+  #knife {
+    position:absolute; width:150px; height:60px; z-index:20;
+    cursor:grab; touch-action:none; opacity:0; transition:opacity .5s ease;
+    filter:drop-shadow(0 6px 8px #00000033);
+  }
+  #knife.show { opacity:1; }
+  #knife.docked { animation:bob 1.6s ease-in-out infinite; }
+  @keyframes bob { 0%,100%{ margin-top:0; } 50%{ margin-top:-10px; } }
+  #knife.dragging { cursor:grabbing; }
+  #knife svg { transform:rotate(-35deg); transform-origin:8px 38px; display:block; overflow:visible; }
+  #knife.bye { opacity:0; transition:opacity .6s ease; pointer-events:none; }
+  #knifeHint {
+    position:absolute; z-index:19; pointer-events:none;
+    width:74px; height:74px; border-radius:50%;
+    border:3px dashed #d6336c; opacity:.7;
+    animation:pulseRing 1.4s ease-in-out infinite;
+  }
+  @keyframes pulseRing { 0%,100%{ transform:scale(.85); opacity:.35;} 50%{ transform:scale(1.1); opacity:.8;} }
+
+  /* ---------- finale ---------- */
+  #finale {
+    position:absolute; inset:0; z-index:40;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; pointer-events:none; text-align:center;
+    background:radial-gradient(ellipse at center, #fff0f6cc 0%, #ffd6e788 70%, transparent 100%);
+  }
+  .hbLine { font-family:'Pacifico', cursive; line-height:1.15; }
+  .hbLine.l1 { font-size:clamp(2.4rem, 9vw, 5.5rem); color:#d6336c; }
+  .hbLine.l2 {
+    font-size:clamp(3.4rem, 13vw, 8rem);
+    background:linear-gradient(90deg,#ff6b9d,#ff922b,#fab005,#40c057,#22b8cf,#845ef7,#ff6b9d);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 3px 0 #ffffffcc);
+  }
+  .hbLine span { display:inline-block; animation:popLetter .65s cubic-bezier(.3,1.6,.5,1) backwards; }
+  @keyframes popLetter {
+    from { opacity:0; transform:translateY(46px) scale(.3) rotate(-12deg); }
+  }
+  #finaleSub {
+    font-size:clamp(1.05rem, 3.5vw, 1.5rem); font-weight:700; color:#a61e4d;
+    background:#ffffffd9; padding:10px 26px; border-radius:99px;
+    box-shadow:0 6px 18px #d6336c33;
+    animation:cardIn .8s 1.4s ease backwards;
+  }
+  #replayBtn { pointer-events:auto; margin-top:14px; animation:cardIn .8s 2s ease backwards; }
+
+  #confettiCanvas { position:fixed; inset:0; width:100%; height:100%; z-index:45; pointer-events:none; }
+
+  /* balloons */
+  .balloon {
+    position:fixed; bottom:-160px; z-index:44; pointer-events:none;
+    animation:rise linear infinite;
+  }
+  @keyframes rise {
+    0%   { transform:translateY(0) translateX(0) rotate(-3deg); }
+    25%  { transform:translateY(-28vh) translateX(26px) rotate(4deg); }
+    50%  { transform:translateY(-56vh) translateX(-20px) rotate(-4deg); }
+    75%  { transform:translateY(-84vh) translateX(22px) rotate(3deg); }
+    100% { transform:translateY(-118vh) translateX(0) rotate(-2deg); }
+  }
+  .bBody {
+    width:var(--bs); height:calc(var(--bs) * 1.22); position:relative;
+    background:radial-gradient(circle at 32% 28%, #ffffffcc 0 12%, transparent 38%), var(--bc);
+    border-radius:50% 50% 50% 50% / 56% 56% 44% 44%;
+    box-shadow:inset -6px -8px 14px #00000022;
+  }
+  .bBody::after { /* knot */
+    content:''; position:absolute; left:50%; bottom:-8px; transform:translateX(-50%);
+    border-left:7px solid transparent; border-right:7px solid transparent;
+    border-bottom:10px solid var(--bc); filter:brightness(.85);
+  }
+  .bString {
+    position:absolute; left:50%; top:100%; width:2px; height:110px;
+    background:linear-gradient(#a61e4d99, transparent); transform:translateX(-50%);
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ SCENE 1 : blow out the candles ============ -->
+  <div class="scene" id="scene1">
+    <div class="sceneTitle">Maia's Birthday Cake 🎂</div>
+    <div class="instructions" id="instr1">Make a wish… then <b>blow into your microphone</b> to blow out the candles! 🌬️✨</div>
+    <svg class="cakeSvg" id="svg1" viewBox="0 0 600 500" aria-label="Birthday cake with candles"></svg>
+    <div id="meter"><div id="meterFill"></div></div>
+    <div id="meterLabel">blow-o-meter 🌬️</div>
+  </div>
+
+  <!-- ============ SCENE 2 : cut the cake ============ -->
+  <div class="scene pre hidden" id="scene2">
+    <div class="sceneTitle">Time to cut the cake! 🍰</div>
+    <div class="instructions" id="instr2">Removing the candles…</div>
+    <div id="stage2">
+      <svg class="cakeSvg" id="svg2" viewBox="0 0 600 520" aria-label="Cake seen from above"></svg>
+      <div id="knifeHint" class="hidden"></div>
+      <div id="knife" class="docked">
+        <svg width="150" height="60" viewBox="0 0 150 60">
+          <defs>
+            <linearGradient id="bladeGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f1f3f5"/><stop offset=".55" stop-color="#ced4da"/><stop offset="1" stop-color="#adb5bd"/>
+            </linearGradient>
+          </defs>
+          <path d="M4,40 Q6,17 42,14 L92,14 L92,40 Z" fill="url(#bladeGrad)" stroke="#868e96" stroke-width="1"/>
+          <rect x="90" y="12" width="56" height="28" rx="13" fill="#9c6644" stroke="#7f5539" stroke-width="1.5"/>
+          <circle cx="106" cy="26" r="3" fill="#e6ccb2"/>
+          <circle cx="124" cy="26" r="3" fill="#e6ccb2"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FINALE ============ -->
+  <div id="finale" class="hidden">
+    <div class="hbLine l1" id="hb1"></div>
+    <div class="hbLine l2" id="hb2"></div>
+    <div id="finaleSub">Hope every single wish comes true 💖🎉</div>
+    <button class="bigBtn" id="replayBtn">Replay 🔁</button>
+  </div>
+
+  <canvas id="confettiCanvas" class="hidden"></canvas>
+
+  <!-- ============ START OVERLAY ============ -->
+  <div id="startOverlay">
+    <div class="startCard">
+      <h1>Hi Maia! 💗</h1>
+      <p>Someone baked you a little surprise…</p>
+      <button class="bigBtn" id="startBtn">Light the candles ✨</button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const SVGNS = 'http://www.w3.org/2000/svg';
+  const el = (name, attrs = {}, parent = null) => {
+    const n = document.createElementNS(SVGNS, name);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (parent) parent.appendChild(n);
+    return n;
+  };
+  // deterministic pseudo-random so cloned decor matches
+  let seed = 42;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+
+  /* ==================================================
+     SCENE 1 — side-view cake with candles
+  ================================================== */
+  const svg1 = $('svg1');
+  const defs1 = el('defs', {}, svg1);
+
+  const grad = (id, stops, defs) => {
+    const g = el('linearGradient', { id, x1:0, y1:0, x2:0, y2:1 }, defs);
+    stops.forEach(([o, c]) => el('stop', { offset:o, 'stop-color':c }, g));
+  };
+  grad('tierBottom', [[0,'#ffa8c5'],[1,'#f06595']], defs1);
+  grad('tierTop',    [[0,'#ffc2d9'],[1,'#ff8fb3']], defs1);
+  const glowGrad = el('radialGradient', { id:'glowGrad' }, defs1);
+  el('stop', { offset:0,  'stop-color':'#ffd43b', 'stop-opacity':.55 }, glowGrad);
+  el('stop', { offset:1,  'stop-color':'#ffd43b', 'stop-opacity':0   }, glowGrad);
+
+  // candle stripe patterns
+  const candleColors = ['#ff8fb0', '#63e6be', '#ffd43b', '#74c0fc', '#b197fc'];
+  candleColors.forEach((c, i) => {
+    const p = el('pattern', { id:'stripe'+i, width:8, height:8, patternUnits:'userSpaceOnUse', patternTransform:'rotate(45)' }, defs1);
+    el('rect', { width:8, height:8, fill:'#ffffff' }, p);
+    el('rect', { width:4, height:8, fill:c }, p);
+  });
+
+  // plate + shadow
+  el('ellipse', { cx:300, cy:445, rx:215, ry:26, fill:'#00000014' }, svg1);
+  el('ellipse', { cx:300, cy:436, rx:205, ry:28, fill:'#ffffff' }, svg1);
+  el('ellipse', { cx:300, cy:432, rx:185, ry:22, fill:'#f1f3f5' }, svg1);
+
+  // tiers
+  el('rect', { x:130, y:335, width:340, height:100, rx:14, fill:'url(#tierBottom)' }, svg1);
+  el('rect', { x:185, y:245, width:230, height:92,  rx:12, fill:'url(#tierTop)' }, svg1);
+
+  // dripping frosting along the top of each tier
+  function drip(x0, x1, y, capH, minD, maxD, fill) {
+    const count = Math.round((x1 - x0) / 26);
+    const w = (x1 - x0) / count;
+    let d = `M${x0},${y - capH} L${x1},${y - capH} L${x1},${y}`;
+    for (let i = count; i > 0; i--) {
+      const drop = minD + rnd() * (maxD - minD);
+      d += ` A${w/2},${drop} 0 0 1 ${x0 + (i-1)*w},${y}`;
+    }
+    d += ' Z';
+    el('path', { d, fill }, svg1);
+  }
+  drip(130, 470, 348, 13, 8, 26, '#fff0f6');
+  drip(185, 415, 257, 12, 7, 22, '#ffffff');
+
+  // dots of icing on the bottom tier + name
+  for (let i = 0; i < 7; i++) {
+    el('circle', { cx:165 + i*45, cy:418, r:6, fill:'#fff0f6' }, svg1);
+  }
+  const name1 = el('text', { x:300, y:402, 'text-anchor':'middle', fill:'#c2255c',
+    'font-size':30, style:"font-family:'Pacifico',cursive" }, svg1);
+  name1.textContent = 'Maia ♥';
+
+  // candles
+  const candleXs = [220, 260, 300, 340, 380];
+  const candles = [];
+  candleXs.forEach((x, i) => {
+    const g = el('g', { class:'candle' }, svg1);
+    el('rect', { x:x-5.5, y:196, width:11, height:54, rx:3, fill:'url(#stripe'+i+')', stroke:'#00000018' }, g);
+    el('line', { x1:x, y1:196, x2:x, y2:188, stroke:'#5c3d2e', 'stroke-width':2 }, g);
+
+    const wrap = el('g', { class:'flameWrap' }, g);
+    const lean = el('g', { class:'flameLean' }, wrap);
+    const fl = el('g', { class:'flame' }, lean);
+    fl.style.animationDuration = (0.14 + rnd() * 0.09).toFixed(3) + 's';
+    fl.style.animationDelay = (rnd() * 0.2).toFixed(2) + 's';
+    el('circle', { cx:x, cy:178, r:17, fill:'url(#glowGrad)' }, fl);
+    el('path', { d:`M${x},${166} C${x+7},${176} ${x+7.5},${183} ${x},${189} C${x-7.5},${183} ${x-7},${176} ${x},${166}`,
+      fill:'#ff922b' }, fl);
+    el('path', { d:`M${x},${173} C${x+4},${179} ${x+4},${184} ${x},${188} C${x-4},${184} ${x-4},${179} ${x},${173}`,
+      fill:'#ffd43b' }, fl);
+
+    const smoke = el('g', { class:'smoke' }, g);
+    el('path', { d:`M${x},${188} q6,-10 0,-20 q-6,-10 2,-20`, stroke:'#adb5bd', 'stroke-width':4,
+      'stroke-linecap':'round', fill:'none', opacity:.8 }, smoke);
+
+    // generous invisible hit area so flames can also be tapped (mic fallback)
+    const hit = el('circle', { cx:x, cy:177, r:24, fill:'transparent', class:'flameHit' }, g);
+    hit.addEventListener('pointerdown', () => extinguish(i));
+
+    candles.push({ g, lean, out:false });
+  });
+
+  /* ============== mic blow detection ============== */
+  const TOTAL = candles.length;
+  let candlesOut = 0, lit = false, blowHold = 0, micStream = null, audioCtx = null;
+  const meterFill = $('meterFill');
+
+  function extinguish(i) {
+    const c = candles[i];
+    if (!lit || c.out) return;
+    c.out = true;
+    c.lean.style.transform = '';
+    c.g.classList.add('out');
+    candlesOut++;
+    if (candlesOut >= TOTAL) {
+      $('instr1').innerHTML = 'Yay!! Wish made 🌟 …';
+      setTimeout(toScene2, 1500);
+    }
+  }
+  const extinguishNext = () => {
+    const left = candles.map((c, i) => c.out ? -1 : i).filter(i => i >= 0);
+    if (left.length) extinguish(left[Math.floor(Math.random() * left.length)]);
+  };
+
+  async function startMic() {
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio:true });
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 1024;
+      analyser.smoothingTimeConstant = 0.5;
+      audioCtx.createMediaStreamSource(micStream).connect(analyser);
+      const freq = new Uint8Array(analyser.frequencyBinCount);
+      let last = performance.now();
+
+      (function loop(now) {
+        if (candlesOut >= TOTAL) { meterFill.style.width = '0%'; return; }
+        const dt = Math.min((now - last) / 1000, 0.1);
+        last = now;
+        analyser.getByteFrequencyData(freq);
+        let sum = 0;
+        for (let i = 2; i < 64; i++) sum += freq[i];   // blowing = loud low-frequency noise
+        const vol = Math.min(sum / 62 / 110, 1);
+        meterFill.style.width = (vol * 100).toFixed(0) + '%';
+
+        // flames lean away & shrink as you blow
+        const leanAmt = Math.min(vol * 1.5, 1);
+        candles.forEach(c => { if (!c.out)
+          c.lean.style.transform = `skewX(${(-leanAmt*26).toFixed(1)}deg) scaleY(${(1 - leanAmt*0.35).toFixed(3)})`;
+        });
+
+        if (vol > 0.34) blowHold += dt; else blowHold = Math.max(0, blowHold - dt*2);
+        if (blowHold > 0.22) { blowHold = 0; extinguishNext(); }
+        requestAnimationFrame(loop);
+      })(last);
+    } catch (e) {
+      $('instr1').innerHTML = "Hmm, I can't hear your mic 🙈 — no worries: <b>tap each flame</b> to blow it out!";
+      $('meter').style.display = 'none';
+      $('meterLabel').style.display = 'none';
+    }
+  }
+
+  $('startBtn').addEventListener('click', () => {
+    $('startOverlay').classList.add('gone');
+    candles.forEach((c, i) => setTimeout(() => c.g.classList.add('lit'), 350 + i * 180));
+    setTimeout(() => { lit = true; }, 350 + TOTAL * 180);
+    startMic();
+  });
+
+  /* ==================================================
+     SCENE 2 — overhead view, remove candles, cut a slice
+  ================================================== */
+  const svg2 = $('svg2');
+  const CX = 300, CY = 235, RX = 190, RY = 110, DEPTH = 55;
+  const onEllipse = deg => {
+    const a = deg * Math.PI / 180;
+    return [CX + RX * Math.cos(a), CY + RY * Math.sin(a)];
+  };
+
+  const defs2 = el('defs', {}, svg2);
+  grad('sideGrad', [[0,'#ff8fb3'],[1,'#e64980']], defs2);
+
+  // plate
+  el('ellipse', { cx:CX, cy:CY + 32, rx:252, ry:148, fill:'#00000012' }, svg2);
+  el('ellipse', { cx:CX, cy:CY + 26, rx:246, ry:142, fill:'#ffffff' }, svg2);
+  el('ellipse', { cx:CX, cy:CY + 22, rx:228, ry:128, fill:'#f1f3f5' }, svg2);
+
+  // cake side (front rim visible from the high angle)
+  el('path', { d:`M${CX-RX},${CY} L${CX-RX},${CY+DEPTH} A${RX},${RY} 0 0 0 ${CX+RX},${CY+DEPTH} L${CX+RX},${CY} A${RX},${RY} 0 0 1 ${CX-RX},${CY}`,
+    fill:'url(#sideGrad)' }, svg2);
+
+  // cake top (everything decorative goes in topG so the slice can clone it)
+  const topG = el('g', { id:'topG' }, svg2);
+  el('ellipse', { cx:CX, cy:CY, rx:RX, ry:RY, fill:'#ffc2d9' }, topG);
+  el('ellipse', { cx:CX, cy:CY, rx:RX-26, ry:RY-17, fill:'#ffd9e8' }, topG);
+  for (let d = 0; d < 360; d += 14) {           // frosting dollops around the rim
+    const [px, py] = onEllipse(d);
+    el('circle', { cx:px, cy:py, r:9, fill:'#fff0f6' }, topG);
+  }
+  const sprinkleCols = ['#ff6b9d','#fab005','#40c057','#22b8cf','#845ef7','#ff922b'];
+  for (let i = 0; i < 34; i++) {                // sprinkles
+    const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * 0.78;
+    const sx = CX + Math.cos(a) * RX * r, sy = CY + Math.sin(a) * RY * r;
+    el('rect', { x:sx, y:sy, width:9, height:3.2, rx:1.6,
+      fill:sprinkleCols[i % sprinkleCols.length], transform:`rotate(${Math.floor(rnd()*180)} ${sx} ${sy})` }, topG);
+  }
+  const name2 = el('text', { x:CX, y:CY - 42, 'text-anchor':'middle', fill:'#c2255c',
+    'font-size':34, style:"font-family:'Pacifico',cursive" }, topG);
+  name2.textContent = 'Maia ♥';
+
+  // ----- the slice wedge -----
+  const TH1 = 35, TH2 = 80;                     // wedge angles (front-right)
+  const [E1x, E1y] = onEllipse(TH1);
+  const [E2x, E2y] = onEllipse(TH2);
+  const wedgeD = `M${CX},${CY} L${E1x},${E1y} A${RX},${RY} 0 0 1 ${E2x},${E2y} Z`;
+
+  // exposed sponge revealed when the slice slides away
+  const gapW = el('path', { id:'gapW', d:wedgeD, fill:'#ffe8b3', stroke:'#f5c66f', 'stroke-width':2 }, svg2);
+
+  // movable slice = clipped clone of the decorated top
+  const clip = el('clipPath', { id:'wedgeClip' }, defs2);
+  el('path', { d:wedgeD }, clip);
+  const sliceG = el('g', { id:'sliceG' }, svg2);
+  const clipped = el('g', { 'clip-path':'url(#wedgeClip)' }, sliceG);
+  clipped.appendChild(topG.cloneNode(true));
+  el('path', { d:wedgeD, fill:'none', stroke:'#e64980', 'stroke-width':2, opacity:.35 }, sliceG);
+
+  // candles viewed from above (they get "removed" when the scene opens)
+  const topCandles = [];
+  [205, 250, 295, 340, 385].forEach((deg, i) => {
+    const a = deg * Math.PI / 180;
+    const px = CX + Math.cos(a) * 95, py = CY + Math.sin(a) * 56;
+    const g = el('g', { class:'candleTop' }, svg2);
+    el('circle', { cx:px, cy:py, r:12, fill:candleColors[i], stroke:'#ffffff', 'stroke-width':3 }, g);
+    el('circle', { cx:px, cy:py, r:3, fill:'#5c3d2e' }, g);
+    topCandles.push(g);
+  });
+
+  // ----- cut guides -----
+  const cuts = [
+    { from:[E1x, E1y], to:[CX, CY] },           // edge → centre
+    { from:[CX, CY],  to:[E2x, E2y] },          // centre → edge
+  ];
+  cuts.forEach(c => {
+    c.guide = el('path', { class:'guide', d:`M${c.from[0]},${c.from[1]} L${c.to[0]},${c.to[1]}` }, svg2);
+    c.prog = el('path', { class:'prog', d:`M${c.from[0]},${c.from[1]} L${c.to[0]},${c.to[1]}`,
+      pathLength:1, 'stroke-dasharray':1, 'stroke-dashoffset':1 }, svg2);
+    c.progress = 0; c.armed = false; c.done = false;
+  });
+  let activeCut = -1;
+
+  /* ============== scene transition ============== */
+  function toScene2() {
+    if (micStream) micStream.getTracks().forEach(t => t.stop());
+    if (audioCtx) audioCtx.close().catch(() => {});
+    $('scene1').classList.add('gone');
+    const s2 = $('scene2');
+    s2.classList.remove('hidden');
+    requestAnimationFrame(() => requestAnimationFrame(() => s2.classList.remove('pre')));
+
+    topCandles.forEach((g, i) => setTimeout(() => g.classList.add('removed'), 900 + i * 220));
+    setTimeout(startCutting, 900 + topCandles.length * 220 + 600);
+  }
+
+  /* ============== knife dragging + cutting ============== */
+  const knife = $('knife'), stage2 = $('stage2'), hint = $('knifeHint');
+  const DOCK = { x: 0.78, y: 0.30 };            // knife dock, as a fraction of the stage
+
+  function dockKnife() {
+    const r = stage2.getBoundingClientRect();
+    knife.style.left = (r.width * DOCK.x) + 'px';
+    knife.style.top = (r.height * DOCK.y) + 'px';
+    hint.style.left = (r.width * DOCK.x - 16) + 'px';
+    hint.style.top = (r.height * DOCK.y + 2) + 'px';
+  }
+  window.addEventListener('resize', dockKnife);
+
+  function startCutting() {
+    $('instr2').innerHTML = '<b>Grab the knife 🔪</b> and drag it along the dotted line — start from the edge of the cake!';
+    dockKnife();
+    knife.classList.add('show');
+    hint.classList.remove('hidden');
+    activeCut = 0;
+    cuts[0].guide.classList.add('on');
+  }
+
+  const toSvgPoint = e => {
+    const pt = svg2.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    return pt.matrixTransform(svg2.getScreenCTM().inverse());
+  };
+
+  let dragging = false;
+  knife.addEventListener('pointerdown', e => {
+    if (activeCut < 0 || activeCut >= cuts.length) return;
+    dragging = true;
+    knife.classList.add('dragging');
+    knife.classList.remove('docked');
+    hint.classList.add('hidden');
+    try { knife.setPointerCapture(e.pointerId); } catch (_) {}
+    moveKnife(e);
+  });
+  knife.addEventListener('pointermove', e => { if (dragging) { moveKnife(e); track(e); } });
+  knife.addEventListener('pointerup', () => { dragging = false; knife.classList.remove('dragging'); });
+  knife.addEventListener('pointercancel', () => { dragging = false; knife.classList.remove('dragging'); });
+
+  function moveKnife(e) {
+    const r = stage2.getBoundingClientRect();
+    knife.style.left = (e.clientX - r.left - 8) + 'px';   // blade tip rides the pointer
+    knife.style.top = (e.clientY - r.top - 38) + 'px';
+  }
+
+  function track(e) {
+    const c = cuts[activeCut];
+    if (!c || c.done) return;
+    const p = toSvgPoint(e);
+    const dx = c.to[0] - c.from[0], dy = c.to[1] - c.from[1];
+    const len2 = dx*dx + dy*dy;
+    let t = ((p.x - c.from[0]) * dx + (p.y - c.from[1]) * dy) / len2;
+    t = Math.max(0, Math.min(1, t));
+    const nx = c.from[0] + t*dx - p.x, ny = c.from[1] + t*dy - p.y;
+    const dist = Math.hypot(nx, ny);
+
+    if (!c.armed && dist < 50 && t < 0.25) c.armed = true;
+    if (c.armed && dist < 45 && t > c.progress) {
+      c.progress = t;
+      c.prog.setAttribute('stroke-dashoffset', 1 - t);
+      if (t >= 0.96) finishCut(c);
+    }
+  }
+
+  function finishCut(c) {
+    c.done = true;
+    c.prog.setAttribute('stroke-dashoffset', 0);
+    c.guide.classList.remove('on');
+    sparkle(c.to[0], c.to[1]);
+    activeCut++;
+    if (activeCut < cuts.length) {
+      cuts[activeCut].guide.classList.add('on');
+      $('instr2').innerHTML = 'Perfect! ✨ Now the second cut — <b>from the middle back out to the edge</b>!';
+    } else {
+      $('instr2').innerHTML = 'Beautiful cut, chef Maia! 👩‍🍳💕';
+      knife.classList.add('bye');
+      cuts.forEach(x => { x.guide.remove(); x.prog.remove(); });
+      setTimeout(() => {
+        gapW.classList.add('show');
+        sliceG.classList.add('cut');
+        setTimeout(showFinale, 1600);
+      }, 350);
+    }
+  }
+
+  function sparkle(x, y) {
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const s = el('circle', { cx:x, cy:y, r:4, fill:'#ffd43b' }, svg2);
+      s.animate(
+        [{ transform:'translate(0,0)', opacity:1 }, { transform:`translate(${Math.cos(a)*34}px,${Math.sin(a)*34}px)`, opacity:0 }],
+        { duration:550, easing:'ease-out' }
+      ).onfinish = () => s.remove();
+    }
+  }
+
+  /* ==================================================
+     FINALE — big greeting, confetti & balloons
+  ================================================== */
+  function letterize(target, text, baseDelay) {
+    const node = $(target);
+    [...text].forEach((ch, i) => {
+      const s = document.createElement('span');
+      s.textContent = ch === ' ' ? ' ' : ch;
+      s.style.animationDelay = (baseDelay + i * 0.055) + 's';
+      node.appendChild(s);
+    });
+  }
+
+  function showFinale() {
+    document.querySelectorAll('#scene2 .sceneTitle, #scene2 .instructions').forEach(n => {
+      n.style.transition = 'opacity .6s'; n.style.opacity = 0;
+    });
+    const f = $('finale');
+    f.classList.remove('hidden');
+    letterize('hb1', 'Happy Birthday', 0.1);
+    letterize('hb2', 'Maia!', 1.0);
+    startConfetti();
+    startBalloons();
+  }
+
+  /* ----- confetti ----- */
+  function startConfetti() {
+    const canvas = $('confettiCanvas');
+    canvas.classList.remove('hidden');
+    const ctx = canvas.getContext('2d');
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const fit = () => { canvas.width = innerWidth * dpr; canvas.height = innerHeight * dpr; };
+    fit();
+    window.addEventListener('resize', fit);
+    const colors = ['#ff5e8a','#ffd166','#06d6a0','#4cc9f0','#b388ff','#ff9e6d','#fff'];
+    const parts = Array.from({ length:160 }, () => ({
+      x: Math.random() * canvas.width,
+      y: -Math.random() * canvas.height,
+      w: (6 + Math.random() * 8) * dpr,
+      h: (4 + Math.random() * 6) * dpr,
+      c: colors[Math.floor(Math.random() * colors.length)],
+      vy: (1.4 + Math.random() * 2.6) * dpr,
+      rot: Math.random() * Math.PI,
+      vr: (Math.random() - .5) * 0.18,
+      ph: Math.random() * Math.PI * 2,
+      amp: (0.6 + Math.random()) * dpr,
+    }));
+    (function draw(t) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p of parts) {
+        p.y += p.vy;
+        p.x += Math.sin(t / 600 + p.ph) * p.amp;
+        p.rot += p.vr;
+        if (p.y > canvas.height + 20) { p.y = -20; p.x = Math.random() * canvas.width; }
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.c;
+        ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+        ctx.restore();
+      }
+      requestAnimationFrame(draw);
+    })(0);
+  }
+
+  /* ----- balloons ----- */
+  function startBalloons() {
+    const hues = [340, 50, 160, 200, 270, 20, 310, 100];
+    for (let i = 0; i < 12; i++) {
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      const size = 52 + Math.random() * 36;
+      b.style.setProperty('--bs', size + 'px');
+      b.style.setProperty('--bc', `hsl(${hues[i % hues.length]}, 85%, 68%)`);
+      b.style.left = (4 + Math.random() * 88) + 'vw';
+      b.style.animationDuration = (7 + Math.random() * 6) + 's';
+      b.style.animationDelay = (Math.random() * 6) + 's';
+      b.innerHTML = '<div class="bBody"></div><div class="bString"></div>';
+      document.body.appendChild(b);
+    }
+  }
+
+  $('replayBtn').addEventListener('click', () => location.reload());
+
+  // small QA hooks (handy for testing without a mic)
+  window.__qa = { extinguishAll: () => { lit = true; candles.forEach((c, i) => extinguish(i)); }, showFinale };
+})();
+</script>
+</body>
+</html>
